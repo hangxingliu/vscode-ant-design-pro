@@ -1,0 +1,5 @@
+icon/icon.svg
+utils/**
+extension/vscode.d.ts
+*.tgz
+*.vsix

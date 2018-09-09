@@ -1,0 +1,68 @@
+{
+	"name": "vscode-ant-design-pro",
+	"displayName": "Ant Design Pro",
+	"description": "Ant Design Pro Helper for VSCode",
+	"version": "0.1.0",
+	"license": "GPL-3.0",
+	"publisher": "hangxingliu",
+	"author": "hangxingliu",
+	"engines": {
+		"vscode": "^1.1.0"
+	},
+	"icon": "icon/icon.png",
+	"galleryBanner": {
+		"color": "#FFF5F5",
+		"theme": "light"
+	},
+	"categories": [
+		"Other"
+	],
+	"keywords": [
+		"vscode",
+		"ant-design"
+	],
+	"main": "./extension/main",
+	"scripts": {
+		"fetch-vscode-dts": "node ./extension/vscode.d.ts/FETCH.js"
+	},
+	"devDependencies": {
+		"@types/node": "^10.5.1",
+		"babel-eslint": "^9.0.0",
+		"vscode": "^1.1.18"
+	},
+	"dependencies": {
+		"@babel/parser": "^7.0.0",
+		"@babel/traverse": "^7.0.0",
+		"fs-extra": "^7.0.0",
+		"lodash": "^4.17.10"
+	},
+	"activationEvents": [
+		"workspaceContains:package.json"
+	],
+	"contributes": {
+		"commands": [
+			{
+				"command": "antdesignpro.reload",
+				"title": "Reload Ant Design Pro Extension",
+				"category": "Ant Design Pro"
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "ant-design-pro-explorer",
+					"icon": "icon/icon-white.svg",
+					"title": "Ant Design Pro Explorer"
+				}
+			]
+		},
+		"views": {
+			"ant-design-pro-explorer": [
+				{
+					"id": "ant-design-pro-modules",
+					"name": "Modules"
+				}
+			]
+		}
+	}
+}
