@@ -26,7 +26,8 @@ function createProjectParser(projectPath) {
 		isOk: () => ok,
 		getAllModelNames: () => Object.keys(models),
 		parse, getReportInfo, getModelLocation, reloadModel,
-		getModelByFilePath, getModelCompletions, getEffectsAndReducersCompletions,
+		getModelByFilePath,
+		getModelCompletions, getStatesCompletion, getEffectsAndReducersCompletions,
 	};
 
 	function parse() {
@@ -78,55 +79,92 @@ function createProjectParser(projectPath) {
 	}
 
 	/**
-	 * @param {string} modelName
+	 * @param {string} name
+	 * @param {vscode.CompletionItemKind} kind
+	 * @param {string} [detail]
+	 */
+	function _newCompletionItem(name, kind, detail = undefined) {
+		const cit = new vscode.CompletionItem(name, kind);
+		if (detail) cit.detail = detail;
+		return cit;
+	}
+
+	/**
+	 * @param {AntdModuleParserResult} modalContext
 	 * @param {string} prefix
 	 */
-	function getEffectsAndReducersCompletions(modelName, prefix = '') {
-		if (!modelName || !Object.prototype.hasOwnProperty.call(models, modelName))
-			return null;
-		const model = models[modelName];
+	function getStatesCompletion(modalContext, prefix = '') {
+		if (!modalContext) return null;
 		const results = [];
-		model.effects.forEach(it => {
-			if (!prefix || it.name.toLowerCase().startsWith(prefix)) {
-				const cit = new vscode.CompletionItem(it.name, vscode.CompletionItemKind.Method);
-				cit.detail = `effect in "${modelName}"`;
-				results.push(cit);
-			}
-		});
-		model.reducers.forEach(it => {
-			if (!prefix || it.name.toLowerCase().startsWith(prefix)) {
-				const cit = new vscode.CompletionItem(it.name, vscode.CompletionItemKind.Method);
-				cit.detail = `reducer in "${modelName}"`;
-				results.push(cit);
-			}
+		modalContext.states.forEach(it => {
+			if (prefix && !it.name.toLowerCase().startsWith(prefix))
+				return;
+			results.push(_newCompletionItem(it.name, vscode.CompletionItemKind.Property, `state in "${modalContext.namespace}"`));
 		});
 		return results;
 	}
 
 	/**
 	 * @param {string} modelName
-	 * @param {string} [childName]
+	 * @param {string} prefix
+	 * @param {{ignoreEffects?: boolean; ignoreReducers?: boolean; }} [options]
 	 */
-	function getModelLocation(modelName, childName = null) {
+	function getEffectsAndReducersCompletions(modelName, prefix = '', options = {}) {
+		if (!modelName || !Object.prototype.hasOwnProperty.call(models, modelName))
+			return null;
+		const model = models[modelName];
+		const results = [];
+		if (!options || !options.ignoreEffects) {
+			model.effects.forEach(it => {
+				if (prefix && !it.name.toLowerCase().startsWith(prefix))
+					return;
+				results.push(_newCompletionItem(it.name, vscode.CompletionItemKind.Method, `effect in "${modelName}"`));
+			});
+		}
+		if (!options || !options.ignoreReducers) {
+			model.reducers.forEach(it => {
+				if (prefix && !it.name.toLowerCase().startsWith(prefix))
+					return;
+				results.push(_newCompletionItem(it.name, vscode.CompletionItemKind.Method, `reducer in "${modelName}"`));
+			});
+		}
+		return results;
+	}
+
+	/**
+	 * @param {string} modelName
+	 * @param {string} [childName]
+	 * @param {{ignoreEffects?: boolean; ignoreReducers?: boolean; ignoreStates?: boolean; noDefault?: boolean}} [options]
+	 */
+	function getModelLocation(modelName, childName = null, options = {}) {
 		if (!modelName || !Object.prototype.hasOwnProperty.call(models, modelName))
 			return null;
 
 		const model = models[modelName];
 		const file = vscode.Uri.file(model.file);
 		if (childName) {
-			const foundEffect = model.effects.find(it => it.name == childName);
-			if (foundEffect)
-				return new vscode.Location(file, createVSCodeRange(foundEffect));
+			if (!options || !options.ignoreEffects) {
+				const foundEffect = model.effects.find(it => it.name == childName);
+				if (foundEffect)
+					return new vscode.Location(file, createVSCodeRange(foundEffect));
+			}
 
-			const foundReducer = model.reducers.find(it => it.name == childName);
-			if (foundReducer)
-				return new vscode.Location(file, createVSCodeRange(foundReducer));
+			if (!options || !options.ignoreReducers) {
+				const foundReducer = model.reducers.find(it => it.name == childName);
+				if (foundReducer)
+					return new vscode.Location(file, createVSCodeRange(foundReducer));
+			}
 
-			const foundState = model.states.find(it => it.name == childName);
-			if (foundState)
-				return new vscode.Location(file, createVSCodeRange(foundState));
+			if (!options || !options.ignoreStates) {
+				const foundState = model.states.find(it => it.name == childName);
+				if (foundState)
+					return new vscode.Location(file, createVSCodeRange(foundState));
+			}
 
 		}
+
+		if (options && options.noDefault === true)
+			return null;
 		return new vscode.Location(file, AT_START);
 	}
 

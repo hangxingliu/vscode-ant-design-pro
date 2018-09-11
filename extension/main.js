@@ -19,7 +19,7 @@ let projectParsers = [{
 	parser: createProjectParser(null)
 }].slice(0, 0);
 
-/** @type {vscode.TreeDataProvider} */
+/** @type {vscode.TreeDataProvider & {refresh: Function}} */
 let modelTreeProvider = null;
 
 /** @param {vscode.TextDocument} document */
@@ -61,8 +61,9 @@ function provideDefinition(document, position, token) {
 
 	const model = parser.getModelByFilePath(filePath);
 	if (!model) return null;
+	const options = { ignoreEffects: true, ignoreStates: true, noDefault: true };
 	for (const part of parts) {
-		const loc = parser.getModelLocation(model.namespace, part);
+		const loc = parser.getModelLocation(model.namespace, part, options);
 		if (loc) return loc;
 	}
 	return null;
@@ -83,15 +84,36 @@ function provideCompletionItems(document, position) {
 
 	const beforeText = lineText.slice(0, pos);
 	const beforeTextLower = beforeText.toLowerCase();
-	if (beforeTextLower.match(/\b(models|props|dispatch|effects|loading)\b/)) {
-		const mtx = beforeText.match(/(\w+)$/);
-		if (mtx)
-			return parser.getModelCompletions(mtx[1]);
+
+	const _beforeWord = beforeText.match(/(\w+)$/);
+	const beforeWord = _beforeWord ? _beforeWord[1] : '';
+
+	const inModel = parser.getModelByFilePath(document.uri.fsPath);
+	const results = [];
+
+	if (inModel) {
+		if (beforeTextLower.match(/\b(select|state)\b/)) {
+			const r = parser.getStatesCompletion(inModel, beforeWord);
+			if (r) results.push(...r);
+		}
+		if (beforeText.match(/\b(select)\b/)) {
+			const r = parser.getModelCompletions(beforeWord);
+			if (r) results.push(...r);
+		}
+		const r = parser.getEffectsAndReducersCompletions(inModel.namespace, beforeWord, { ignoreEffects: true });
+		if (r) results.push(...r);
+	} else {
+		if (beforeTextLower.match(/\b(?:models|props|dispatch|connect|easydispatch|effects|loading)\b/)) {
+			const r = parser.getModelCompletions(beforeWord);
+			if (r) results.push(...r);
+		}
+		const mtx = beforeText.match(/(\w+)[\.\[\/'"`](\w*)$/)
+		if (mtx) {
+			const r = parser.getEffectsAndReducersCompletions(mtx[1], mtx[2]);
+			if (r) results.push(...r);
+		}
 	}
-	const mtx = beforeText.match(/(\w+)[\.\[\/'"`](\w*)$/)
-	if (mtx)
-		return parser.getEffectsAndReducersCompletions(mtx[1], mtx[2]);
-	return null;
+	return results;
 }
 
 function reloadParser() {
@@ -147,11 +169,10 @@ function onFileModify(uri) {
 	it.parser.reloadModel(uri.fsPath);
 }
 
-/** @returns {vscode.TreeDataProvider} */
+/** @returns {vscode.TreeDataProvider & {refresh: Function}} */
 function createModelsTreeProvider() {
 	const onDidChangeTreeData = new vscode.EventEmitter();
 	const provider = {
-		//@ts-ignore
 		refresh: what => onDidChangeTreeData.fire(what),
 		//@ts-ignore
 		onDidChangeTreeData: (...p) => onDidChangeTreeData.event(...p),
