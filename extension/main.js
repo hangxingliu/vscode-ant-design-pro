@@ -6,11 +6,8 @@ const fs = require('fs');
 const vscode = require('vscode');
 const log = require('./console-logger');
 const vscodeHelper = require('./vscode-helper');
+const vscodeIcon = require('./vscode-icon');
 const { createProjectParser, MODELS_DIR } = require('./parser/parse-project');
-
-const JAVASCRIPTS = ['javascript', 'javascriptreact'];
-const JAVASCRIPTS_MAP = {};
-JAVASCRIPTS.forEach(key => { JAVASCRIPTS_MAP[key] = key; });
 
 let projectParsers = [{
 	project: '',
@@ -22,14 +19,6 @@ let projectParsers = [{
 /** @type {vscode.TreeDataProvider & {refresh: Function}} */
 let modelTreeProvider = null;
 
-/** @param {vscode.TextDocument} document */
-function getProjectPath(document) {
-	if (!Object.prototype.hasOwnProperty.call(JAVASCRIPTS_MAP, document.languageId)) return;
-	if (!document.uri) return;
-	const folder = vscode.workspace.getWorkspaceFolder(document.uri);
-	if (!folder || !folder.uri || !folder.uri.fsPath) return;
-	return folder.uri.fsPath;
-}
 
 /**
  * @param {vscode.TextDocument} document
@@ -37,7 +26,8 @@ function getProjectPath(document) {
  * @param {vscode.CancellationToken} token
  */
 function provideDefinition(document, position, token) {
-	const projectPath = getProjectPath(document);
+	if (!vscodeHelper.isJavascriptDocument(document)) return;
+	const projectPath = vscodeHelper.getProjectPathByDocument(document);
 	const it = projectParsers.find(it => it.project == projectPath);
 	if (!it) return null;
 
@@ -74,7 +64,8 @@ function provideDefinition(document, position, token) {
  * @param {vscode.Position} position
  */
 function provideCompletionItems(document, position) {
-	const projectPath = getProjectPath(document);
+	if (!vscodeHelper.isJavascriptDocument(document)) return;
+	const projectPath = vscodeHelper.getProjectPathByDocument(document);
 	const it = projectParsers.find(it => it.project == projectPath);
 	if (!it) return null;
 
@@ -171,37 +162,44 @@ function onFileModify(uri) {
 
 /** @returns {vscode.TreeDataProvider & {refresh: Function}} */
 function createModelsTreeProvider() {
+	const dirIcon = vscodeIcon.getIcon('dir.svg');
+
+	/** @type {{project?: string; model?: string;}[]} */
+	let data = [];
 	const onDidChangeTreeData = new vscode.EventEmitter();
 	const provider = {
-		refresh: what => onDidChangeTreeData.fire(what),
+		refresh: what => { data = []; onDidChangeTreeData.fire(what); },
 		//@ts-ignore
 		onDidChangeTreeData: (...p) => onDidChangeTreeData.event(...p),
 		getTreeItem: it => it,
-		getChildren: it => {
-			if (!it) {
+		getChildren: parent => {
+			if (!parent) {
 				// root level
 				return projectParsers.filter(it => it.parser.isOk()).map(it => {
 					const treeItem = new vscode.TreeItem(path.basename(it.project), vscode.TreeItemCollapsibleState.Expanded)
-					treeItem.id = 'project:' + it.project;
+					treeItem.id = (data.push({ project: it.project }) - 1).toString();
+					treeItem.iconPath = dirIcon;
 					return treeItem;
 				});
 			}
-			if (typeof it.id !== 'string' || !it.id) return null;
-			const parentId = String(it.id);
-			if (parentId.startsWith('project:')) {
-				const projectPath = parentId.slice('project:'.length);
-				const project = projectParsers.find(it => it.project == projectPath);
-				if (!project) return null;
-				return project.parser.getAllModelNames().map(it => {
-					const treeItem = new vscode.TreeItem(it, vscode.TreeItemCollapsibleState.Expanded)
-					treeItem.id = 'model:' + it + '\nproject' + projectPath;
-					return treeItem;
-				});
-			}
-			if (parentId.startsWith('model:')) {
-				//todo
-			}
-			return null;
+			if (typeof parent.id !== 'string' || !parent.id) return null;
+			const parentInfo = data[parseInt(parent.id, 10)];
+			if (!parentInfo || !parentInfo.project) return null;
+
+			const project = projectParsers.find(it => it.project == parentInfo.project);
+			if (!project) return null;
+
+			if (parentInfo.model) return null;
+			return project.parser.getAllModelNames().map(modelName => {
+				const treeItem = new vscode.TreeItem(modelName, vscode.TreeItemCollapsibleState.None);
+				treeItem.id = (data.push({ project: parentInfo.project, model: modelName }) - 1).toString();
+				treeItem.command = {
+					command: 'antdesignpro.gotomodel',
+					title: 'Goto model',
+					arguments: [parentInfo.project, modelName],
+				};
+				return treeItem;
+			});
 		},
 	};
 	return provider;
@@ -217,11 +215,7 @@ function activate(context) {
 	if (!reloadParser())
 		return;
 
-	/** @type {vscode.DocumentFilter[]} */
-	const documentSelectors = JAVASCRIPTS.map(it => ({
-		scheme: 'file',
-		language: it,
-	}));
+	const documentSelectors = vscodeHelper.getJavascriptDocumentSelector();
 
 	context.subscriptions.push(
 		vscode.languages.registerDefinitionProvider(documentSelectors, { provideDefinition }));
@@ -247,6 +241,30 @@ function activate(context) {
 			}).catch(ex => {
 				vscodeHelper.showErrorMessage(ex.name || 'error');
 			})
+		}));
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('antdesignpro.gotomodel', (projectPath, modelName) => {
+			if (!projectPath) {
+				const activeEditor = vscode.window.activeTextEditor;
+				if (!activeEditor || !activeEditor.document) return;
+				projectPath = vscodeHelper.getProjectPathByDocument(activeEditor.document);
+			}
+
+			const it = projectParsers.find(it => it.project == projectPath);
+			if (!it) return;
+
+			if(modelName) return gotModelName(modelName);
+			vscode.window.showQuickPick(it.parser.getAllModelNames())
+				.then(modelName => { if (modelName) gotModelName(modelName); });
+
+			function gotModelName(modelName) {
+				const model = it.parser.getModelByName(modelName);
+				if (!model) return;
+
+				vscode.workspace.openTextDocument(vscode.Uri.file(model.file))
+					.then(document => vscode.window.showTextDocument(document));
+			}
 		}));
 
 	log.debug('activated done!');

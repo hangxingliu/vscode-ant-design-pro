@@ -45,6 +45,10 @@
 				"command": "antdesignpro.reload",
 				"title": "Reload Ant Design Pro Extension",
 				"category": "Ant Design Pro"
+			},{
+				"command": "antdesignpro.gotomodel",
+				"title": "Goto Ant Design Pro Model",
+				"category": "Ant Design Pro"
 			}
 		],
 		"viewsContainers": {

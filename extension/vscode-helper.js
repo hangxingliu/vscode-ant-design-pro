@@ -38,10 +38,36 @@ function showConfirm(title, btnOk, btnCancel, flags = 0) {
 	});
 }
 
+/** @param {vscode.TextDocument} document */
+function getProjectPathByDocument(document) {
+	if (!document || !document.uri) return;
+	const folder = vscode.workspace.getWorkspaceFolder(document.uri);
+	if (!folder || !folder.uri || !folder.uri.fsPath) return;
+	return folder.uri.fsPath;
+}
+
+
+const JAVASCRIPTS = ['javascript', 'javascriptreact'];
+const JAVASCRIPTS_MAP = {};
+JAVASCRIPTS.forEach(key => { JAVASCRIPTS_MAP[key] = key; });
+
+/** @param {vscode.TextDocument} document */
+function isJavascriptDocument(document) {
+	return Object.prototype.hasOwnProperty.call(JAVASCRIPTS_MAP, document.languageId);
+}
+
+function getJavascriptDocumentSelector() {
+	/** @type {vscode.DocumentFilter[]} */
+	const documentSelectors = JAVASCRIPTS.map(it => ({
+		scheme: 'file',
+		language: it,
+	}));
+	return documentSelectors;
+}
 
 /**
- * @param {any} document
- * @param {any} position
+ * @param {vscode.TextDocument} document
+ * @param {vscode.Position} position
  * @returns {string}
  */
 function getTextBeforeCursor(document, position) {
@@ -51,8 +77,8 @@ function getTextBeforeCursor(document, position) {
 }
 
 /**
- * @param {any} document
- * @param {any} position
+ * @param {vscode.TextDocument} document
+ * @param {vscode.Position} position
  * @returns {string}
  */
 function getTextAroundCursor(document, position) {
@@ -74,5 +100,9 @@ module.exports = {
 	getTextBeforeCursor,
 	getTextAroundCursor,
 	showErrorMessage,
-	showMessage
+	showMessage,
+
+	getProjectPathByDocument,
+	getJavascriptDocumentSelector,
+	isJavascriptDocument,
 };

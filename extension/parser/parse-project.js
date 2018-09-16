@@ -26,7 +26,7 @@ function createProjectParser(projectPath) {
 		isOk: () => ok,
 		getAllModelNames: () => Object.keys(models),
 		parse, getReportInfo, getModelLocation, reloadModel,
-		getModelByFilePath,
+		getModelByFilePath, getModelByName,
 		getModelCompletions, getStatesCompletion, getEffectsAndReducersCompletions,
 	};
 
@@ -61,6 +61,13 @@ function createProjectParser(projectPath) {
 		}
 	}
 
+	/** @param {string} modelName */
+	function getModelByName(modelName) {
+		const model = models[modelName];
+		if (!model || !model.ok) return null;
+		return model;
+	}
+
 	/** @param {string} filePath */
 	function reloadModel(filePath) {
 		return parseAntDesignProModuleFile(filePath)
@@ -72,9 +79,10 @@ function createProjectParser(projectPath) {
 	 * @param {string} prefix
 	 */
 	function getModelCompletions(prefix = '') {
-		let names =  Object.keys(models);
+		let names = Object.keys(models);
+		const lowerPrefix = prefix.toLowerCase();
 		if (prefix)
-			names = names.filter(name => name.toLowerCase().startsWith(prefix));
+			names = names.filter(name => name.toLowerCase().startsWith(lowerPrefix));
 		return names.map(name => new vscode.CompletionItem(name, vscode.CompletionItemKind.Module));
 	}
 
@@ -95,9 +103,10 @@ function createProjectParser(projectPath) {
 	 */
 	function getStatesCompletion(modalContext, prefix = '') {
 		if (!modalContext) return null;
+		const lowerPrefix = prefix.toLowerCase();
 		const results = [];
 		modalContext.states.forEach(it => {
-			if (prefix && !it.name.toLowerCase().startsWith(prefix))
+			if (prefix && !it.name.toLowerCase().startsWith(lowerPrefix))
 				return;
 			results.push(_newCompletionItem(it.name, vscode.CompletionItemKind.Property, `state in "${modalContext.namespace}"`));
 		});
@@ -113,17 +122,18 @@ function createProjectParser(projectPath) {
 		if (!modelName || !Object.prototype.hasOwnProperty.call(models, modelName))
 			return null;
 		const model = models[modelName];
+		const lowerPrefix = prefix.toLowerCase();
 		const results = [];
 		if (!options || !options.ignoreEffects) {
 			model.effects.forEach(it => {
-				if (prefix && !it.name.toLowerCase().startsWith(prefix))
+				if (prefix && !it.name.toLowerCase().startsWith(lowerPrefix))
 					return;
 				results.push(_newCompletionItem(it.name, vscode.CompletionItemKind.Method, `effect in "${modelName}"`));
 			});
 		}
 		if (!options || !options.ignoreReducers) {
 			model.reducers.forEach(it => {
-				if (prefix && !it.name.toLowerCase().startsWith(prefix))
+				if (prefix && !it.name.toLowerCase().startsWith(lowerPrefix))
 					return;
 				results.push(_newCompletionItem(it.name, vscode.CompletionItemKind.Method, `reducer in "${modelName}"`));
 			});
