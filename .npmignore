@@ -1,3 +1,5 @@
+release.sh
+
 .vscode
 
 extension/vscode.d.ts/*.d.ts
