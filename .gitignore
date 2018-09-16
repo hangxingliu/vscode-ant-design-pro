@@ -1,5 +1,7 @@
-# ignore vsix
 *.vsix
+*.zip
+*.tar
+*.tgz
 
 # Logs
 logs

@@ -1,17 +1,25 @@
 {
 	"name": "vscode-ant-design-pro",
-	"displayName": "Ant Design Pro",
+	"displayName": "Ant Design Pro Helper",
 	"description": "Ant Design Pro Helper for VSCode",
 	"version": "0.1.0",
 	"license": "GPL-3.0",
 	"publisher": "hangxingliu",
 	"author": "hangxingliu",
+	"homepage": "https://github.com/hangxingliu/vscode-ant-design-pro",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/hangxingliu/vscode-ant-design-pro"
+	},
+	"bugs": {
+		"url": "https://github.com/hangxingliu/vscode-ant-design-pro/issues"
+	},
 	"engines": {
 		"vscode": "^1.1.0"
 	},
 	"icon": "icon/icon.png",
 	"galleryBanner": {
-		"color": "#FFF5F5",
+		"color": "#E6F7FF",
 		"theme": "light"
 	},
 	"categories": [
@@ -19,15 +27,20 @@
 	],
 	"keywords": [
 		"vscode",
-		"ant-design"
+		"ant-design-pro"
 	],
 	"main": "./extension/main",
 	"scripts": {
-		"fetch-vscode-dts": "node ./extension/vscode.d.ts/FETCH.js"
+		"fetch-vscode-dts": "node ./extension/vscode.d.ts/FETCH.js",
+		"test": "npm run test:eslint && npm run test:mocha",
+		"test:eslint": "eslint extension",
+		"test:mocha": "mocha test/**/*.test.js"
 	},
 	"devDependencies": {
+		"@hangxingliu/assert": "^0.1.1",
 		"@types/node": "^10.5.1",
 		"babel-eslint": "^9.0.0",
+		"mocha": "^5.2.0",
 		"vscode": "^1.1.18"
 	},
 	"dependencies": {
@@ -45,7 +58,8 @@
 				"command": "antdesignpro.reload",
 				"title": "Reload Ant Design Pro Extension",
 				"category": "Ant Design Pro"
-			},{
+			},
+			{
 				"command": "antdesignpro.gotomodel",
 				"title": "Goto Ant Design Pro Model",
 				"category": "Ant Design Pro"

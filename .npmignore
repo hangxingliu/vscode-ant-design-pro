@@ -1,4 +1,8 @@
 .vscode
-utils/cache
-*.vsix
+
+extension/vscode.d.ts/*.d.ts
+
+*.zip
+*.tar
 *.tgz
+*.vsix
