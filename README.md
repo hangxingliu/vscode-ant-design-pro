@@ -1,5 +1,8 @@
 # Ant Design Pro Helper for VS Code
 
+[![npm Version](https://img.shields.io/npm/v/vscode-ant-design-pro.svg)](https://www.npmjs.com/package/vscode-ant-design-pro)
+[![Build Status](https://travis-ci.org/hangxingliu/vscode-ant-design-pro.svg?branch=master)](https://travis-ci.org/hangxingliu/vscode-ant-design-pro)
+
 An **experimental** extension for more convenient coding with Ant Design Pro in Visual Studio Code.  
 
 一个为了更方便编写 Ant Design Pro 项目的 VSCode 插件.

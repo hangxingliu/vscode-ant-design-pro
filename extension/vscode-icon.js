@@ -2,7 +2,6 @@
 /// <reference path="index.d.ts" />
 
 const path = require('path');
-const fs = require('fs');
 
 const ICON_DIR = path.join(__dirname, '..', 'icon');
 const LIGHT_ICON_DIR = path.join(ICON_DIR, 'light');

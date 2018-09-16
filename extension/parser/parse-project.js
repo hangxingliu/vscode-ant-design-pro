@@ -1,10 +1,10 @@
 //@ts-check
 /// <reference path="../index.d.ts" />
 
-const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
 const vscode = require('vscode');
+const log = require('../console-logger');
 const { parseAntDesignProModuleFile } = require('./parse-antd-module');
 
 const MODELS_DIR = 'src/models';
@@ -72,7 +72,7 @@ function createProjectParser(projectPath) {
 	function reloadModel(filePath) {
 		return parseAntDesignProModuleFile(filePath)
 			.then(it => { models[it.namespace] = it; return Promise.resolve(true); })
-			.catch(ex => { console.error(ex.stack); return Promise.resolve(false); });
+			.catch(ex => { log.error(ex.stack || ex); return Promise.resolve(false); });
 	}
 
 	/**

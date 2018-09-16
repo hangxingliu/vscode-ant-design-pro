@@ -13,7 +13,7 @@ let pkg = {};
 try {
 	pkg = JSON.parse(fs.readFileSync(PACKAGE_FILE, 'utf8'));
 } catch (ex) {
-	console.error(ex.stack);
+	console.error(ex.stack); //eslint-disable-line no-console
 }
 
 module.exports = {

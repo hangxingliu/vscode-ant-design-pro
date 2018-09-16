@@ -14,8 +14,8 @@ let http = require('https'),
 http.get(FROM, response => {
 	if (response.statusCode != 200)
 		throw new Error(`Response code is ${response.statusCode} !`);
-	console.log('start receiving body ...');
-	
+	console.log('start receiving body ...'); // eslint-disable-line no-console
+
 	let tsData = '',
 		tsNamespaceData = '';
 	response.setEncoding('utf8');
@@ -24,13 +24,13 @@ http.get(FROM, response => {
 		tsNamespaceData = tsData.replace(MODULE_REGEXP, 'namespace vscode {');
 		if (tsData == tsNamespaceData)
 			throw new Error(`Could not match ${MODULE_REGEXP.toString()} in ts data!`);
-		
+
 		fs.writeFileSync(TARGET, tsData);
 		fs.writeFileSync(TARGET_NAMESPACE, tsNamespaceData);
-		
-		return console.log('\n  success: fetch done!\n');
+
+		return console.log('\n  success: fetch done!\n'); // eslint-disable-line no-console
 	});
 }).on('error', err => {
 	throw err
 	});
-console.log('start requesting vscode.d.ts ...');
+console.log('start requesting vscode.d.ts ...'); // eslint-disable-line no-console

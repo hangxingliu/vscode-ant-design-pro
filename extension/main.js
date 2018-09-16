@@ -2,7 +2,6 @@
 /// <reference path="index.d.ts" />
 
 const path = require('path');
-const fs = require('fs');
 const vscode = require('vscode');
 const log = require('./console-logger');
 const vscodeHelper = require('./vscode-helper');
@@ -26,6 +25,8 @@ let modelTreeProvider = null;
  * @param {vscode.CancellationToken} token
  */
 function provideDefinition(document, position, token) {
+	void token;
+
 	if (!vscodeHelper.isJavascriptDocument(document)) return;
 	const projectPath = vscodeHelper.getProjectPathByDocument(document);
 	const it = projectParsers.find(it => it.project == projectPath);
@@ -142,7 +143,7 @@ function reloadParser() {
 			modelTreeProvider.refresh(null);
 		return Promise.resolve(true);
 	}).catch(ex => {
-		console.error(ex.stack)
+		log.error(ex.stack || ex)
 	});
 }
 
@@ -252,7 +253,7 @@ function activate(context) {
 			}
 
 			const it = projectParsers.find(it => it.project == projectPath);
-			if (!it) return;
+			if (!it || !it.parser.isOk()) return;
 
 			if(modelName) return gotModelName(modelName);
 			vscode.window.showQuickPick(it.parser.getAllModelNames())

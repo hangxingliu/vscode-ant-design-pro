@@ -3,7 +3,7 @@
 
 const _ = require('lodash');
 const fs = require('fs-extra');
-// const path = require('path');
+const log = require('../console-logger');
 const traverse = require('@babel/traverse').default;
 const { parseCode, createLocationFromASTNode } = require('./babel-parser');
 
@@ -40,7 +40,7 @@ function parseAntDesignProModuleFile(filePath, fileContent = null) {
 		try {
 			ast = parseCode(fileContent);
 		} catch (ex) {
-			console.error(`Error: parseCode from ${filePath}\n${ex.stack}`);
+			log.error(`Error: parseCode from ${filePath}\n${ex.stack}`);
 			return Promise.resolve(result);
 		}
 
