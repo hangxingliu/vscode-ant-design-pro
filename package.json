@@ -2,7 +2,7 @@
 	"name": "vscode-ant-design-pro",
 	"displayName": "Ant Design Pro Helper",
 	"description": "Ant Design Pro Helper for VSCode",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"license": "GPL-3.0",
 	"publisher": "hangxingliu",
 	"author": "hangxingliu",
@@ -54,6 +54,18 @@
 		"workspaceContains:package.json"
 	],
 	"contributes": {
+		"configuration": [
+			{
+				"title": "Ant Design Pro",
+				"properties": {
+					"ant-design-pro.modelsDir": {
+						"type": "string",
+						"default": "src/models",
+						"description": "models directory of your project"
+					}
+				}
+			}
+		],
 		"commands": [
 			{
 				"command": "antdesignpro.reload",

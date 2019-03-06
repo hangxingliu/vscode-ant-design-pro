@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.2.0 (2019-03-06)
+
+0. Support custom models directory via config VS Code `ant-design-pro.modelsDir`.
+
 ### 0.1.0 (2018-09-17)
 
 0. First release
