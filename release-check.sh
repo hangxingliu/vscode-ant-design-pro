@@ -51,4 +51,5 @@ echo "============================";
 echo "Publish commands:";
 echo "   npm publish";
 echo "   vsce publish";
+echo "   git tag $release_version -m \"Release $release_version\"";
 echo "============================";

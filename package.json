@@ -40,15 +40,15 @@
 		"@hangxingliu/assert": "^0.1.1",
 		"@types/node": "^10.5.1",
 		"babel-eslint": "^9.0.0",
-		"eslint": "^5.6.0",
+		"eslint": "^5.15.1",
 		"mocha": "^5.2.0",
-		"vscode": "^1.1.18"
+		"vscode": "^1.1.30"
 	},
 	"dependencies": {
 		"@babel/parser": "^7.0.0",
-		"@babel/traverse": "^7.0.0",
+		"@babel/traverse": "^7.3.4",
 		"fs-extra": "^7.0.0",
-		"lodash": "^4.17.10"
+		"lodash": "^4.17.11"
 	},
 	"activationEvents": [
 		"workspaceContains:package.json"
@@ -83,5 +83,10 @@
 				}
 			]
 		}
+	},
+	"__metadata": {
+		"id": "9a9c78c9-923b-44ad-83a3-a7dd11ce44d2",
+		"publisherDisplayName": "Liu Yue",
+		"publisherId": "43f8445f-f00e-4e08-ab0f-21e398616231"
 	}
 }
