@@ -7,12 +7,13 @@ const vscode = require('vscode');
 const log = require('../console-logger');
 const { parseAntDesignProModuleFile } = require('./parse-antd-module');
 
-const MODELS_DIR = 'src/models';
+let modelsDir = 'src/models';
 const AT_START = new vscode.Position(0, 0);
 
 module.exports = {
 	createProjectParser,
-	MODELS_DIR
+	getModelsDir: () => modelsDir,
+	setModelsDir: _dir => modelsDir = _dir,
 };
 
 /**
@@ -31,18 +32,18 @@ function createProjectParser(projectPath) {
 	};
 
 	function parse() {
-		const modelsDir = path.join(projectPath, MODELS_DIR);
+		const modelsDirFullPath = path.join(projectPath, modelsDir);
 		ok = false;
-		return fs.stat(modelsDir)
+		return fs.stat(modelsDirFullPath)
 			.then(stat => { ok = stat.isDirectory() }).catch(() => { })
 			.then(() => {
 				if (!ok)
 					return Promise.resolve(false);
-				return fs.readdir(modelsDir)
+				return fs.readdir(modelsDirFullPath)
 					.then(files => {
 						return Promise.all(
 							files
-								.map(file => path.join(modelsDir, file))
+								.map(file => path.join(modelsDirFullPath, file))
 								.filter(it => it.endsWith('.js') && fs.statSync(it).isFile())
 								.map(file => parseAntDesignProModuleFile(file)));
 					}).then(results => {
@@ -68,11 +69,17 @@ function createProjectParser(projectPath) {
 		return model;
 	}
 
-	/** @param {string} filePath */
-	function reloadModel(filePath) {
-		return parseAntDesignProModuleFile(filePath)
-			.then(it => { models[it.namespace] = it; return Promise.resolve(true); })
-			.catch(ex => { log.error(ex.stack || ex); return Promise.resolve(false); });
+	/**
+	 * @param {string} filePath
+	 * @param {string} [unsavedContent]
+	 */
+	function reloadModel(filePath, unsavedContent = null) {
+		return parseAntDesignProModuleFile(filePath, unsavedContent)
+			.then(it => {
+				if (it.ok)
+					models[it.namespace] = it;
+				return Promise.resolve(true);
+			}).catch(ex => { log.error(ex.stack || ex); return Promise.resolve(false); });
 	}
 
 	/**
@@ -83,7 +90,8 @@ function createProjectParser(projectPath) {
 		const lowerPrefix = prefix.toLowerCase();
 		if (prefix)
 			names = names.filter(name => name.toLowerCase().startsWith(lowerPrefix));
-		return names.map(name => new vscode.CompletionItem(name, vscode.CompletionItemKind.Module));
+		return names.map(name => _newCompletionItem(name, vscode.CompletionItemKind.Module,
+			`model ${name}`));
 	}
 
 	/**
@@ -98,17 +106,18 @@ function createProjectParser(projectPath) {
 	}
 
 	/**
-	 * @param {AntdModuleParserResult} modalContext
+	 * @param {AntdModuleParserResult} modelContext
 	 * @param {string} prefix
 	 */
-	function getStatesCompletion(modalContext, prefix = '') {
-		if (!modalContext) return null;
+	function getStatesCompletion(modelContext, prefix = '') {
+		if (!modelContext) return null;
 		const lowerPrefix = prefix.toLowerCase();
 		const results = [];
-		modalContext.states.forEach(it => {
+		modelContext.states.forEach(it => {
 			if (prefix && !it.name.toLowerCase().startsWith(lowerPrefix))
 				return;
-			results.push(_newCompletionItem(it.name, vscode.CompletionItemKind.Property, `state in "${modalContext.namespace}"`));
+			results.push(_newCompletionItem(it.name, vscode.CompletionItemKind.Property,
+				`state in model "${modelContext.namespace}"`));
 		});
 		return results;
 	}
