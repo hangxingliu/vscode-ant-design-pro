@@ -28,7 +28,7 @@ let modelTreeProvider = null;
 function provideDefinition(document, position, token) {
 	void token;
 
-	if (!vscodeHelper.isJavascriptDocument(document)) return;
+	if (!vscodeHelper.isSupportDocument(document)) return;
 	const projectPath = vscodeHelper.getProjectPathByDocument(document);
 	const it = projectParsers.find(it => it.project == projectPath);
 	if (!it) return null;
@@ -66,7 +66,7 @@ function provideDefinition(document, position, token) {
  * @param {vscode.Position} position
  */
 function provideCompletionItems(document, position) {
-	if (!vscodeHelper.isJavascriptDocument(document)) return;
+	if (!vscodeHelper.isSupportDocument(document)) return;
 	const projectPath = vscodeHelper.getProjectPathByDocument(document);
 	const it = projectParsers.find(it => it.project == projectPath);
 	if (!it) return null;
@@ -168,7 +168,7 @@ function reloadParser() {
 			if (it.parser.isOk()) {
 				if (!it.watcher) {
 					it.watcher = vscode.workspace.createFileSystemWatcher(
-						new vscode.RelativePattern(it.project, `${modelsDir}/*.js`),
+						new vscode.RelativePattern(it.project, `${modelsDir}/*.{ts,js}`),
 						false, false, true // ignoreCreate, ignoreChange, ignoreDelete
 					);
 					it.watcher.onDidChange(onFileModify);
@@ -275,7 +275,7 @@ function activate(context) {
 	if (!reloadParser())
 		return;
 
-	const documentSelectors = vscodeHelper.getJavascriptDocumentSelector();
+	const documentSelectors = vscodeHelper.getSupportDocumentSelector();
 
 	context.subscriptions.push(
 		vscode.languages.registerDefinitionProvider(documentSelectors, { provideDefinition }));

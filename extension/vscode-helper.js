@@ -47,18 +47,18 @@ function getProjectPathByDocument(document) {
 }
 
 
-const JAVASCRIPTS = ['javascript', 'javascriptreact'];
-const JAVASCRIPTS_MAP = {};
-JAVASCRIPTS.forEach(key => { JAVASCRIPTS_MAP[key] = key; });
+const SUPPORT_LANG = ['javascript', 'javascriptreact', 'typescript', 'typescriptreact'];
+const SUPPORT_LANG_MAP = {};
+SUPPORT_LANG.forEach(key => { SUPPORT_LANG_MAP[key] = key; });
 
 /** @param {vscode.TextDocument} document */
-function isJavascriptDocument(document) {
-	return Object.prototype.hasOwnProperty.call(JAVASCRIPTS_MAP, document.languageId);
+function isSupportDocument(document) {
+	return Object.prototype.hasOwnProperty.call(SUPPORT_LANG_MAP, document.languageId);
 }
 
-function getJavascriptDocumentSelector() {
+function getSupportDocumentSelector() {
 	/** @type {vscode.DocumentFilter[]} */
-	const documentSelectors = JAVASCRIPTS.map(it => ({
+	const documentSelectors = SUPPORT_LANG.map(it => ({
 		scheme: 'file',
 		language: it,
 	}));
@@ -103,6 +103,6 @@ module.exports = {
 	showMessage,
 
 	getProjectPathByDocument,
-	getJavascriptDocumentSelector,
-	isJavascriptDocument,
+	getSupportDocumentSelector,
+	isSupportDocument,
 };
