@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.3.0 (2019-03-31)
+
+0. Add support for typescript. (Related issue: #1)
+
 ### 0.2.0 (2019-03-06)
 
 0. Support custom models directory via config VS Code `ant-design-pro.modelsDir`.
