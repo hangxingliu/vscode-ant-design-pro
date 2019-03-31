@@ -44,7 +44,7 @@ function createProjectParser(projectPath) {
 						return Promise.all(
 							files
 								.map(file => path.join(modelsDirFullPath, file))
-								.filter(it => it.endsWith('.js') && fs.statSync(it).isFile())
+								.filter(it => /\.[jt]sx?$/i.test(it) && fs.statSync(it).isFile())
 								.map(file => parseAntDesignProModuleFile(file)));
 					}).then(results => {
 						results.filter(it => it.ok).forEach(it => { models[it.namespace] = it; });

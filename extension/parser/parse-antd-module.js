@@ -38,7 +38,7 @@ function parseAntDesignProModuleFile(filePath, fileContent = null) {
 	function thenable(fileContent) {
 		let ast = null;
 		try {
-			ast = parseCode(fileContent);
+			ast = parseCode(fileContent, filePath);
 		} catch (ex) {
 			log.error(`Error: parseCode from ${filePath}\n${ex.stack}`);
 			return Promise.resolve(result);

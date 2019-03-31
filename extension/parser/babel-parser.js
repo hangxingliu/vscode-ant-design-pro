@@ -8,16 +8,25 @@ module.exports = {
 	createLocationFromASTNode
 };
 
-function parseCode(code) {
-	return Parser.parse(code, {
-		sourceType: 'module',
-		plugins: [
-			'objectRestSpread',
-			'jsx',
-			'ecorators-legacy',
-			'classProperties'
-		]
-	});
+/**
+ * @param {string} filePath
+ * @returns {boolean}
+ */
+function isTypescriptFile(filePath) {
+	return typeof filePath === 'string' && filePath && /\.tsx?$/i.test(filePath);
+}
+
+function parseCode(code, filePath = '') {
+	const plugins = [
+		'objectRestSpread',
+		'jsx',
+		'ecorators-legacy',
+		'classProperties',
+	];
+	if (isTypescriptFile(filePath))
+		plugins.push('typescript');
+
+	return Parser.parse(code, { sourceType: 'module', plugins });
 }
 
 /**

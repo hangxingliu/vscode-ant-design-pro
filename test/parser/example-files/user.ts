@@ -1,4 +1,7 @@
+//@ts-ignore
 import { query as queryUsers, queryCurrent } from '@/services/user';
+
+type Action = { payload: any };
 
 export default {
   namespace: 'user',
@@ -9,16 +12,16 @@ export default {
   },
 
   effects: {
-    *fetch(_, { call, put }) {
+    *fetch(_: any, { call, put }) {
       const response = yield call(queryUsers);
       yield put({
         type: 'save',
         payload: response,
       });
     },
-    *fetchCurrent(_, { call, put }) {
-      const response = yield call(queryCurrent);
-      yield put({
+    async fetchCurrent(_: any, { call, put }) {
+      const response = await call(queryCurrent);
+      await put({
         type: 'saveCurrentUser',
         payload: response,
       });
@@ -26,19 +29,19 @@ export default {
   },
 
   reducers: {
-    save(state, action) {
+    save(state: any, action: Action) {
       return {
         ...state,
         list: action.payload,
       };
     },
-    saveCurrentUser(state, action) {
+    saveCurrentUser(state: any, action: Action) {
       return {
         ...state,
         currentUser: action.payload || {},
       };
     },
-    changeNotifyCount(state, action) {
+    changeNotifyCount(state: any, action: Action) {
       return {
         ...state,
         currentUser: {
